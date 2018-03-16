@@ -16,30 +16,66 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
-  final String title;
+  _MyHomePageState createState() => new _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {}
+  //_MyHomePageState({Key key, this.title}) : super(key: key);
+  //final String title;
+  final List<ListItem> _items = <ListItem>[];
+
+  void leftButtonPressed() {
+
+  }
+
+  void rightButtonPressed() {
+
+  }
+
+  Widget buildFloatingButton(String text, VoidCallback callback) {
+    TextStyle roundTextStyle = const TextStyle(fontSize: 16.0, color: Colors.white);
+    return new FloatingActionButton(
+      child: new Text(text, style: roundTextStyle),
+      onPressed: callback);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    TextStyle timerTextStyle = const TextStyle(fontSize: 60.0);
     return new Scaffold(
       appBar: new AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: new Text(title),
       ),
-      body: new Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: new Text("Hello World"),
+      body: new Container(
+        child: new Column(
+          children: <Widget>[
+            new Container(height: 200.0, 
+              child: new Center(
+                child: new Text("00:00:00", style: timerTextStyle),
+            )),
+            new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                buildFloatingButton("reset", leftButtonPressed),
+                buildFloatingButton("start", rightButtonPressed),
+            ]),
+            new ListView.builder(padding: new EdgeInsets.all(8.0),
+                  reverse: false,
+                  itemBuilder: (_, int index) => _items[index],
+                  itemCount: _items.length),
+          ],
+        )
       ),
+    );
+  }
+}
+
+class ListItem extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return new Container(
+      child: new Text("test")                                    //modified
     );
   }
 }
