@@ -4,7 +4,6 @@ import 'dart:async';
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -24,18 +23,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  //final List<ListItem> _items = <ListItem>[];
   final TimerTextState _timerTextState = new TimerTextState();
   Stopwatch stopwatch = new Stopwatch();
   Timer timer;
 
   void leftButtonPressed() {
-
-  }
-
-  void callback(Timer timer) {
     setState(() {
-      _timerTextState.milliseconds = stopwatch.elapsedMilliseconds;
+      if (stopwatch.isRunning) {
+        print("${stopwatch.elapsedMilliseconds}");
+      } else {
+        stopwatch.reset();
+        _timerTextState.milliseconds = 0;
+      }
     });
   }
 
@@ -43,12 +42,20 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (stopwatch.isRunning) {
         stopwatch.stop();
+        timer.cancel();
+        timer = null;
       } else {
         if (timer == null) {
           timer = new Timer.periodic(new Duration(milliseconds: 10), callback);
         }
         stopwatch.start();
       }
+    });
+  }
+
+  void callback(Timer timer) {
+    setState(() {
+      _timerTextState.milliseconds = stopwatch.elapsedMilliseconds;
     });
   }
 
@@ -77,10 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 buildFloatingButton(stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
                 buildFloatingButton(stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
             ]),
-            // new ListView.builder(padding: new EdgeInsets.all(8.0),
-            //       reverse: false,
-            //       itemBuilder: (_, int index) => _items[index],
-            //       itemCount: _items.length),
           ],
         )
       ),
@@ -109,13 +112,5 @@ class TimerTextState extends State<TimerText> {
     String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
 
     return new Text("$minutesStr:$secondsStr.$hundredsStr", style: timerTextStyle);
-  }
-}
-
-class ListItem extends StatelessWidget {
-  Widget build(BuildContext context) {
-    return new Container(
-      child: new Text("test")                                    //modified
-    );
   }
 }
