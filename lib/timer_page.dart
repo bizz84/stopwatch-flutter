@@ -9,7 +9,6 @@ class TimerPage extends StatefulWidget {
 
 class TimerPageState extends State<TimerPage> {
   Stopwatch stopwatch = new Stopwatch();
-  Timer timer;
 
   void leftButtonPressed() {
     setState(() {
@@ -25,20 +24,9 @@ class TimerPageState extends State<TimerPage> {
     setState(() {
       if (stopwatch.isRunning) {
         stopwatch.stop();
-        timer.cancel();
-        timer = null;
       } else {
-        if (timer == null) {
-          timer = new Timer.periodic(new Duration(milliseconds: 30), callback);
-        }
         stopwatch.start();
       }
-    });
-  }
-
-  void callback(Timer timer) {
-    setState(() {
-
     });
   }
 
@@ -55,7 +43,7 @@ class TimerPageState extends State<TimerPage> {
       children: <Widget>[
         new Container(height: 200.0, 
           child: new Center(
-            child: new TimerText(milliseconds: stopwatch.elapsedMilliseconds),
+            child: new TimerText(stopwatch: stopwatch),
         )),
         new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -67,14 +55,34 @@ class TimerPageState extends State<TimerPage> {
   }
 }
 
-class TimerText extends StatelessWidget {
-  TimerText({this.milliseconds});
-  final int milliseconds;
+class TimerText extends StatefulWidget {
+  TimerText({this.stopwatch});
+  final Stopwatch stopwatch;
+
+  TimerTextState createState() => new TimerTextState(stopwatch: stopwatch);
+}
+
+class TimerTextState extends State<TimerText> {
+
+  Timer timer;
+  final Stopwatch stopwatch;
+
+  TimerTextState({this.stopwatch}) {
+    timer = new Timer.periodic(new Duration(milliseconds: 30), callback);
+  }
+  
+  void callback(Timer timer) {
+    if (stopwatch.isRunning) {
+      setState(() {
+
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
-    String formattedTime = TimerTextFormatter.format(milliseconds);
+    String formattedTime = TimerTextFormatter.format(stopwatch.elapsedMilliseconds);
     return new Text(formattedTime, style: timerTextStyle);
   }
 }
