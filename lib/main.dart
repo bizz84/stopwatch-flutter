@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() => runApp(new MyApp());
 
@@ -11,28 +12,44 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: new MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key}) : super(key: key);
 
   _MyHomePageState createState() => new _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {}
-  //_MyHomePageState({Key key, this.title}) : super(key: key);
-  //final String title;
-  final List<ListItem> _items = <ListItem>[];
+class _MyHomePageState extends State<MyHomePage> {
+  //final List<ListItem> _items = <ListItem>[];
+  final TimerTextState _timerTextState = new TimerTextState();
+  Stopwatch stopwatch = new Stopwatch();
+  Timer timer;
 
   void leftButtonPressed() {
 
   }
 
-  void rightButtonPressed() {
+  void callback(Timer timer) {
+    setState(() {
+      _timerTextState.milliseconds = stopwatch.elapsedMilliseconds;
+    });
+  }
 
+  void rightButtonPressed() {
+    setState(() {
+      if (stopwatch.isRunning) {
+        stopwatch.stop();
+      } else {
+        if (timer == null) {
+          timer = new Timer.periodic(new Duration(milliseconds: 10), callback);
+        }
+        stopwatch.start();
+      }
+    });
   }
 
   Widget buildFloatingButton(String text, VoidCallback callback) {
@@ -44,31 +61,54 @@ class _MyHomePageState extends State<MyHomePage> {}
 
   @override
   Widget build(BuildContext context) {
-    TextStyle timerTextStyle = const TextStyle(fontSize: 60.0);
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text(title),
+        title: new Text("Stopwatch"),
       ),
       body: new Container(
         child: new Column(
           children: <Widget>[
             new Container(height: 200.0, 
               child: new Center(
-                child: new Text("00:00:00", style: timerTextStyle),
+                child: _timerTextState.build(context),
             )),
             new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                buildFloatingButton("reset", leftButtonPressed),
-                buildFloatingButton("start", rightButtonPressed),
+                buildFloatingButton(stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
+                buildFloatingButton(stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
             ]),
-            new ListView.builder(padding: new EdgeInsets.all(8.0),
-                  reverse: false,
-                  itemBuilder: (_, int index) => _items[index],
-                  itemCount: _items.length),
+            // new ListView.builder(padding: new EdgeInsets.all(8.0),
+            //       reverse: false,
+            //       itemBuilder: (_, int index) => _items[index],
+            //       itemCount: _items.length),
           ],
         )
       ),
     );
+  }
+}
+
+class TimerText extends StatefulWidget {
+
+  TimerTextState createState() => new TimerTextState();
+}
+
+class TimerTextState extends State<TimerText> {
+
+  TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
+  int milliseconds = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    int hundreds = (milliseconds / 10).truncate();
+    int seconds = (hundreds / 100).truncate();
+    int minutes = (seconds / 60).truncate();
+
+    String minutesStr = (minutes % 60).toString().padLeft(2, '0');
+    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+    String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
+
+    return new Text("$minutesStr:$secondsStr.$hundredsStr", style: timerTextStyle);
   }
 }
 
