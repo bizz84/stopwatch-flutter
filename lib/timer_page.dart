@@ -8,7 +8,6 @@ class TimerPage extends StatefulWidget {
 }
 
 class TimerPageState extends State<TimerPage> {
-  final TimerTextState _timerTextState = new TimerTextState();
   Stopwatch stopwatch = new Stopwatch();
   Timer timer;
 
@@ -18,7 +17,6 @@ class TimerPageState extends State<TimerPage> {
         print("${stopwatch.elapsedMilliseconds}");
       } else {
         stopwatch.reset();
-        _timerTextState.milliseconds = 0;
       }
     });
   }
@@ -40,7 +38,7 @@ class TimerPageState extends State<TimerPage> {
 
   void callback(Timer timer) {
     setState(() {
-      _timerTextState.milliseconds = stopwatch.elapsedMilliseconds;
+
     });
   }
 
@@ -57,7 +55,7 @@ class TimerPageState extends State<TimerPage> {
       children: <Widget>[
         new Container(height: 200.0, 
           child: new Center(
-            child: _timerTextState.build(context),
+            child: new TimerText(milliseconds: stopwatch.elapsedMilliseconds),
         )),
         new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
@@ -69,18 +67,20 @@ class TimerPageState extends State<TimerPage> {
   }
 }
 
-class TimerText extends StatefulWidget {
-
-  TimerTextState createState() => new TimerTextState();
-}
-
-class TimerTextState extends State<TimerText> {
-
-  TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
-  int milliseconds = 0;
+class TimerText extends StatelessWidget {
+  TimerText({this.milliseconds});
+  final int milliseconds;
 
   @override
   Widget build(BuildContext context) {
+    final TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
+    String formattedTime = TimerTextFormatter.format(milliseconds);
+    return new Text(formattedTime, style: timerTextStyle);
+  }
+}
+
+class TimerTextFormatter {
+  static String format(int milliseconds) {
     int hundreds = (milliseconds / 10).truncate();
     int seconds = (hundreds / 100).truncate();
     int minutes = (seconds / 60).truncate();
@@ -89,6 +89,6 @@ class TimerTextState extends State<TimerText> {
     String secondsStr = (seconds % 60).toString().padLeft(2, '0');
     String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
 
-    return new Text("$minutesStr:$secondsStr.$hundredsStr", style: timerTextStyle);
+    return "$minutesStr:$secondsStr.$hundredsStr"; 
   }
 }
