@@ -31,7 +31,7 @@ class TimerPageState extends State<TimerPage> {
         timer = null;
       } else {
         if (timer == null) {
-          timer = new Timer.periodic(new Duration(milliseconds: 10), callback);
+          timer = new Timer.periodic(new Duration(milliseconds: 30), callback);
         }
         stopwatch.start();
       }
