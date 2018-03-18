@@ -7,6 +7,7 @@ This repo contains the source code for my blog post:
 ## Preview
 
 ![](images/ios-flutter-stopwatch.png)
+<i><center>Left: iOS stopwatch app. Right: My version in Flutter. Beautiful, ain't it?</center></i>
 
 ## License
 
