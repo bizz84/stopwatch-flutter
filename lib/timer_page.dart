@@ -40,16 +40,24 @@ class TimerPageState extends State<TimerPage> {
   @override
   Widget build(BuildContext context) {
     return new Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        new Container(height: 200.0, 
-          child: new Center(
-            child: new TimerText(stopwatch: stopwatch),
-        )),
-        new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            buildFloatingButton(stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
-            buildFloatingButton(stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
-        ]),
+        new Expanded(
+          child: new TimerText(stopwatch: stopwatch),
+        ),
+        new Expanded(
+          flex: 0,
+          child: new Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                buildFloatingButton(stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
+                buildFloatingButton(stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -66,6 +74,7 @@ class TimerTextState extends State<TimerText> {
 
   Timer timer;
   final Stopwatch stopwatch;
+  int milliseconds;
 
   TimerTextState({this.stopwatch});
 
@@ -83,8 +92,8 @@ class TimerTextState extends State<TimerText> {
   }
 
   void callback(Timer timer) {
-    if (stopwatch.isRunning) {
-      final int milliseconds = stopwatch.elapsedMilliseconds;
+    if (milliseconds != stopwatch.elapsedMilliseconds) {
+      milliseconds = stopwatch.elapsedMilliseconds;
       final int hundreds = (milliseconds / 10).truncate();
       final int seconds = (hundreds / 100).truncate();
       final int minutes = (seconds / 60).truncate();
@@ -102,9 +111,26 @@ class TimerTextState extends State<TimerText> {
   @override
   Widget build(BuildContext context) {
     return new Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        new MinutesAndSeconds(stopwatch),
-        new Hundreds(stopwatch),
+        new Expanded(
+          flex: 2,
+          child: new RepaintBoundary(
+            child: new SizedBox(
+              height: 72.0,
+              child: new MinutesAndSeconds(stopwatch),
+            ),
+          ),
+        ),
+        new Expanded(
+          flex: 1,
+          child: new RepaintBoundary(
+            child: new SizedBox(
+              height: 72.0,
+              child: new Hundreds(stopwatch),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -159,7 +185,7 @@ class MinutesAndSecondsState extends State<MinutesAndSeconds> {
   Widget build(BuildContext context) {
     String minutesStr = (minutes % 60).toString().padLeft(2, '0');
     String secondsStr = (seconds % 60).toString().padLeft(2, '0');
-    return new Text('$minutesStr:$secondsStr.', style: timerTextStyle);
+    return new Text('$minutesStr:$secondsStr.', style: timerTextStyle, textAlign: TextAlign.end);
   }
 }
 
@@ -194,6 +220,6 @@ class HundredsState extends State<Hundreds> {
   @override
   Widget build(BuildContext context) {
     String minutesStr = (hundreds % 100).toString().padLeft(2, '0');
-    return new Text(minutesStr, style: timerTextStyle);
+    return new Text(minutesStr, style: timerTextStyle, textAlign: TextAlign.start);
   }
 }
