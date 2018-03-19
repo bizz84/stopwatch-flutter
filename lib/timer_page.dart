@@ -67,36 +67,133 @@ class TimerTextState extends State<TimerText> {
   Timer timer;
   final Stopwatch stopwatch;
 
-  TimerTextState({this.stopwatch}) {
+  TimerTextState({this.stopwatch});
+
+  @override
+  void initState() {
     timer = new Timer.periodic(new Duration(milliseconds: 30), callback);
+    super.initState();
   }
-  
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    timer = null;
+    super.dispose();
+  }
+
   void callback(Timer timer) {
     if (stopwatch.isRunning) {
-      setState(() {
+      final int milliseconds = stopwatch.elapsedMilliseconds;
+      final int hundreds = (milliseconds / 10).truncate();
+      final int seconds = (hundreds / 100).truncate();
+      final int minutes = (seconds / 60).truncate();
+      final ElapsedTime elapsedTime = new ElapsedTime(
+        hundreds: hundreds,
+        seconds: seconds,
+        minutes: minutes,
+      );
+      for (final listener in timerListeners) {
+        listener(elapsedTime);
+      }
+    }
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return new Row(
+      children: <Widget>[
+        new MinutesAndSeconds(stopwatch),
+        new Hundreds(stopwatch),
+      ],
+    );
+  }
+}
+
+class ElapsedTime {
+  final int hundreds;
+  final int seconds;
+  final int minutes;
+
+  ElapsedTime({
+    this.hundreds,
+    this.seconds,
+    this.minutes,
+  });
+}
+
+final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
+const TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
+
+class MinutesAndSeconds extends StatefulWidget {
+  MinutesAndSeconds(this.stopwatch);
+
+  final Stopwatch stopwatch;
+
+  MinutesAndSecondsState createState() => new MinutesAndSecondsState(stopwatch);
+}
+
+class MinutesAndSecondsState extends State<MinutesAndSeconds> {
+  final Stopwatch stopwatch;
+  int minutes = 0;
+  int seconds = 0;
+
+  MinutesAndSecondsState(this.stopwatch);
+
+  @override
+  void initState() {
+    timerListeners.add(onTick);
+    super.initState();
+  }
+
+  void onTick(ElapsedTime elapsed) {
+    if (elapsed.minutes != minutes || elapsed.seconds != seconds) {
+      setState(() {
+        minutes = elapsed.minutes;
+        seconds = elapsed.seconds;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
-    String formattedTime = TimerTextFormatter.format(stopwatch.elapsedMilliseconds);
-    return new Text(formattedTime, style: timerTextStyle);
+    String minutesStr = (minutes % 60).toString().padLeft(2, '0');
+    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
+    return new Text('$minutesStr:$secondsStr.', style: timerTextStyle);
   }
 }
 
-class TimerTextFormatter {
-  static String format(int milliseconds) {
-    int hundreds = (milliseconds / 10).truncate();
-    int seconds = (hundreds / 100).truncate();
-    int minutes = (seconds / 60).truncate();
+class Hundreds extends StatefulWidget {
+  Hundreds(this.stopwatch);
 
-    String minutesStr = (minutes % 60).toString().padLeft(2, '0');
-    String secondsStr = (seconds % 60).toString().padLeft(2, '0');
-    String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
+  final Stopwatch stopwatch;
 
-    return "$minutesStr:$secondsStr.$hundredsStr"; 
+  HundredsState createState() => new HundredsState(stopwatch);
+}
+
+class HundredsState extends State<Hundreds> {
+  final Stopwatch stopwatch;
+  int hundreds = 0;
+
+  HundredsState(this.stopwatch);
+
+  @override
+  void initState() {
+    timerListeners.add(onTick);
+    super.initState();
+  }
+
+  void onTick(ElapsedTime elapsed) {
+    if (elapsed.hundreds != hundreds) {
+      setState(() {
+        hundreds = elapsed.hundreds;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String minutesStr = (hundreds % 100).toString().padLeft(2, '0');
+    return new Text(minutesStr, style: timerTextStyle);
   }
 }
