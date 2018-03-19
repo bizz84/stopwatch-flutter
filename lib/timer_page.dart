@@ -59,15 +59,24 @@ class TimerPageState extends State<TimerPage> {
   @override
   Widget build(BuildContext context) {
     return new Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        new Container(height: 200.0, 
+        new Expanded(
           child: new TimerText(dependencies: dependencies),
         ),
-        new Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            buildFloatingButton(dependencies.stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
-            buildFloatingButton(dependencies.stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
-        ]),
+        new Expanded(
+          flex: 0,
+          child: new Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                buildFloatingButton(dependencies.stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
+                buildFloatingButton(dependencies.stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -84,6 +93,7 @@ class TimerTextState extends State<TimerText> {
   TimerTextState({this.dependencies});
   final Dependencies dependencies;
   Timer timer;
+  int milliseconds;
 
   @override
   void initState() {
@@ -99,8 +109,8 @@ class TimerTextState extends State<TimerText> {
   }
 
   void callback(Timer timer) {
-    if (dependencies.stopwatch.isRunning) {
-      final int milliseconds = dependencies.stopwatch.elapsedMilliseconds;
+    if (milliseconds != dependencies.stopwatch.elapsedMilliseconds) {
+      milliseconds = dependencies.stopwatch.elapsedMilliseconds;
       final int hundreds = (milliseconds / 10).truncate();
       final int seconds = (hundreds / 100).truncate();
       final int minutes = (seconds / 60).truncate();
@@ -117,10 +127,21 @@ class TimerTextState extends State<TimerText> {
 
   @override
   Widget build(BuildContext context) {
-    return new Row(mainAxisAlignment: MainAxisAlignment.center,
+    return new Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        new MinutesAndSeconds(dependencies: dependencies),
-        new Hundreds(dependencies: dependencies),
+          new RepaintBoundary(
+            child: new SizedBox(
+              height: 72.0,
+              child: new MinutesAndSeconds(dependencies: dependencies),
+            ),
+          ),
+          new RepaintBoundary(
+            child: new SizedBox(
+              height: 72.0,
+              child: new Hundreds(dependencies: dependencies),
+            ),
+          ),
       ],
     );
   }
