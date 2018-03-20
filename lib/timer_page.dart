@@ -1,6 +1,25 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+class ElapsedTime {
+  final int hundreds;
+  final int seconds;
+  final int minutes;
+
+  ElapsedTime({
+    this.hundreds,
+    this.seconds,
+    this.minutes,
+  });
+}
+
+class Dependencies {
+
+  final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
+  final TextStyle textStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
+  final Stopwatch stopwatch = new Stopwatch();
+}
+
 class TimerPage extends StatefulWidget {
   TimerPage({Key key}) : super(key: key);
 
@@ -8,24 +27,24 @@ class TimerPage extends StatefulWidget {
 }
 
 class TimerPageState extends State<TimerPage> {
-  Stopwatch stopwatch = new Stopwatch();
+  final Dependencies dependencies = new Dependencies();
 
   void leftButtonPressed() {
     setState(() {
-      if (stopwatch.isRunning) {
-        print("${stopwatch.elapsedMilliseconds}");
+      if (dependencies.stopwatch.isRunning) {
+        print("${dependencies.stopwatch.elapsedMilliseconds}");
       } else {
-        stopwatch.reset();
+        dependencies.stopwatch.reset();
       }
     });
   }
 
   void rightButtonPressed() {
     setState(() {
-      if (stopwatch.isRunning) {
-        stopwatch.stop();
+      if (dependencies.stopwatch.isRunning) {
+        dependencies.stopwatch.stop();
       } else {
-        stopwatch.start();
+        dependencies.stopwatch.start();
       }
     });
   }
@@ -43,7 +62,7 @@ class TimerPageState extends State<TimerPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         new Expanded(
-          child: new TimerText(stopwatch: stopwatch),
+          child: new TimerText(dependencies: dependencies),
         ),
         new Expanded(
           flex: 0,
@@ -52,8 +71,8 @@ class TimerPageState extends State<TimerPage> {
             child: new Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                buildFloatingButton(stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
-                buildFloatingButton(stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
+                buildFloatingButton(dependencies.stopwatch.isRunning ? "lap" : "reset", leftButtonPressed),
+                buildFloatingButton(dependencies.stopwatch.isRunning ? "stop" : "start", rightButtonPressed),
               ],
             ),
           ),
@@ -64,19 +83,17 @@ class TimerPageState extends State<TimerPage> {
 }
 
 class TimerText extends StatefulWidget {
-  TimerText({this.stopwatch});
-  final Stopwatch stopwatch;
+  TimerText({this.dependencies});
+  final Dependencies dependencies;
 
-  TimerTextState createState() => new TimerTextState(stopwatch: stopwatch);
+  TimerTextState createState() => new TimerTextState(dependencies: dependencies);
 }
 
 class TimerTextState extends State<TimerText> {
-
+  TimerTextState({this.dependencies});
+  final Dependencies dependencies;
   Timer timer;
-  final Stopwatch stopwatch;
   int milliseconds;
-
-  TimerTextState({this.stopwatch});
 
   @override
   void initState() {
@@ -92,8 +109,8 @@ class TimerTextState extends State<TimerText> {
   }
 
   void callback(Timer timer) {
-    if (milliseconds != stopwatch.elapsedMilliseconds) {
-      milliseconds = stopwatch.elapsedMilliseconds;
+    if (milliseconds != dependencies.stopwatch.elapsedMilliseconds) {
+      milliseconds = dependencies.stopwatch.elapsedMilliseconds;
       final int hundreds = (milliseconds / 10).truncate();
       final int seconds = (hundreds / 100).truncate();
       final int minutes = (seconds / 60).truncate();
@@ -102,7 +119,7 @@ class TimerTextState extends State<TimerText> {
         seconds: seconds,
         minutes: minutes,
       );
-      for (final listener in timerListeners) {
+      for (final listener in dependencies.timerListeners) {
         listener(elapsedTime);
       }
     }
@@ -113,62 +130,40 @@ class TimerTextState extends State<TimerText> {
     return new Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        new Expanded(
-          flex: 2,
-          child: new RepaintBoundary(
+          new RepaintBoundary(
             child: new SizedBox(
               height: 72.0,
-              child: new MinutesAndSeconds(stopwatch),
+              child: new MinutesAndSeconds(dependencies: dependencies),
             ),
           ),
-        ),
-        new Expanded(
-          flex: 1,
-          child: new RepaintBoundary(
+          new RepaintBoundary(
             child: new SizedBox(
               height: 72.0,
-              child: new Hundreds(stopwatch),
+              child: new Hundreds(dependencies: dependencies),
             ),
           ),
-        ),
       ],
     );
   }
 }
 
-class ElapsedTime {
-  final int hundreds;
-  final int seconds;
-  final int minutes;
-
-  ElapsedTime({
-    this.hundreds,
-    this.seconds,
-    this.minutes,
-  });
-}
-
-final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
-const TextStyle timerTextStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
-
 class MinutesAndSeconds extends StatefulWidget {
-  MinutesAndSeconds(this.stopwatch);
+  MinutesAndSeconds({this.dependencies});
+  final Dependencies dependencies;
 
-  final Stopwatch stopwatch;
-
-  MinutesAndSecondsState createState() => new MinutesAndSecondsState(stopwatch);
+  MinutesAndSecondsState createState() => new MinutesAndSecondsState(dependencies: dependencies);
 }
 
 class MinutesAndSecondsState extends State<MinutesAndSeconds> {
-  final Stopwatch stopwatch;
+  MinutesAndSecondsState({this.dependencies});
+  final Dependencies dependencies;
+
   int minutes = 0;
   int seconds = 0;
 
-  MinutesAndSecondsState(this.stopwatch);
-
   @override
   void initState() {
-    timerListeners.add(onTick);
+    dependencies.timerListeners.add(onTick);
     super.initState();
   }
 
@@ -185,27 +180,26 @@ class MinutesAndSecondsState extends State<MinutesAndSeconds> {
   Widget build(BuildContext context) {
     String minutesStr = (minutes % 60).toString().padLeft(2, '0');
     String secondsStr = (seconds % 60).toString().padLeft(2, '0');
-    return new Text('$minutesStr:$secondsStr.', style: timerTextStyle, textAlign: TextAlign.end);
+    return new Text('$minutesStr:$secondsStr.', style: dependencies.textStyle);
   }
 }
 
 class Hundreds extends StatefulWidget {
-  Hundreds(this.stopwatch);
+  Hundreds({this.dependencies});
+  final Dependencies dependencies;
 
-  final Stopwatch stopwatch;
-
-  HundredsState createState() => new HundredsState(stopwatch);
+  HundredsState createState() => new HundredsState(dependencies: dependencies);
 }
 
 class HundredsState extends State<Hundreds> {
-  final Stopwatch stopwatch;
-  int hundreds = 0;
+  HundredsState({this.dependencies});
+  final Dependencies dependencies;
 
-  HundredsState(this.stopwatch);
+  int hundreds = 0;
 
   @override
   void initState() {
-    timerListeners.add(onTick);
+    dependencies.timerListeners.add(onTick);
     super.initState();
   }
 
@@ -219,7 +213,7 @@ class HundredsState extends State<Hundreds> {
 
   @override
   Widget build(BuildContext context) {
-    String minutesStr = (hundreds % 100).toString().padLeft(2, '0');
-    return new Text(minutesStr, style: timerTextStyle, textAlign: TextAlign.start);
+    String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
+    return new Text(hundredsStr, style: dependencies.textStyle);
   }
 }
