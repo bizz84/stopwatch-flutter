@@ -213,7 +213,7 @@ class HundredsState extends State<Hundreds> {
 
   @override
   Widget build(BuildContext context) {
-    String minutesStr = (hundreds % 100).toString().padLeft(2, '0');
-    return new Text(minutesStr, style: dependencies.textStyle);
+    String hundredsStr = (hundreds % 100).toString().padLeft(2, '0');
+    return new Text(hundredsStr, style: dependencies.textStyle);
   }
 }
