@@ -16,7 +16,7 @@ class ElapsedTime {
 class Dependencies {
 
   final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
-  final TextStyle textStyle = const TextStyle(fontSize: 60.0, fontFamily: "Open Sans");
+  final TextStyle textStyle = const TextStyle(fontSize: 60.0, fontFamily: "Droid Sans Mono");
   final Stopwatch stopwatch = new Stopwatch();
 }
 
