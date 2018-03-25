@@ -18,6 +18,7 @@ class Dependencies {
   final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
   final TextStyle textStyle = const TextStyle(fontSize: 60.0, fontFamily: "Droid Sans Mono");
   final Stopwatch stopwatch = new Stopwatch();
+  final int timerMillisecondsRefreshRate = 30;
 }
 
 class TimerPage extends StatefulWidget {
@@ -97,7 +98,7 @@ class TimerTextState extends State<TimerText> {
 
   @override
   void initState() {
-    timer = new Timer.periodic(new Duration(milliseconds: 30), callback);
+    timer = new Timer.periodic(new Duration(milliseconds: dependencies.timerMillisecondsRefreshRate), callback);
     super.initState();
   }
 
