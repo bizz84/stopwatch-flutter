@@ -18,7 +18,6 @@ class Dependencies {
   final List<ValueChanged<ElapsedTime>> timerListeners = <ValueChanged<ElapsedTime>>[];
   final TextStyle textStyle = const TextStyle(fontSize: 60.0, fontFamily: "Droid Sans Mono");
   final Stopwatch stopwatch = new Stopwatch();
-  final int timerMillisecondsRefreshRate = 30;
 }
 
 class TimerPage extends StatefulWidget {
@@ -90,28 +89,20 @@ class TimerText extends StatefulWidget {
   TimerTextState createState() => new TimerTextState(dependencies: dependencies);
 }
 
-class TimerTextState extends State<TimerText> {
+class TimerTextState extends State<TimerText> with SingleTickerProviderStateMixin {
   TimerTextState({this.dependencies});
   final Dependencies dependencies;
-  Timer timer;
   int milliseconds;
+  AnimationController animation;
 
   @override
   void initState() {
-    timer = new Timer.periodic(new Duration(milliseconds: dependencies.timerMillisecondsRefreshRate), callback);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    timer = null;
-    super.dispose();
-  }
-
-  void callback(Timer timer) {
-    if (milliseconds != dependencies.stopwatch.elapsedMilliseconds) {
-      milliseconds = dependencies.stopwatch.elapsedMilliseconds;
+    animation = new AnimationController(
+      vsync: this,
+      duration: new Duration(days: 1),
+    );
+    animation.addListener(() {
+      final int milliseconds = dependencies.stopwatch.elapsedMilliseconds;
       final int hundreds = (milliseconds / 10).truncate();
       final int seconds = (hundreds / 100).truncate();
       final int minutes = (seconds / 60).truncate();
@@ -123,7 +114,15 @@ class TimerTextState extends State<TimerText> {
       for (final listener in dependencies.timerListeners) {
         listener(elapsedTime);
       }
-    }
+    });
+    animation.forward(from: 0.0);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    animation.dispose();
+    super.dispose();
   }
 
   @override
