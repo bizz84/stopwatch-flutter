@@ -24,7 +24,7 @@ flutter:
   fonts:
     - family: Droid Sans Mono
       fonts:
-        - asset: fonts/DroidSansMono.ttf
+        - asset: fonts/BebasNeue-Regular.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
